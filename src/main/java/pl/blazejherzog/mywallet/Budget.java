@@ -20,4 +20,5 @@ public class Budget {
 
     @Column(name = "amount")
     private int amount;
+
 }

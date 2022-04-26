@@ -36,6 +36,6 @@ public class User {
     private String password;
 
     @NonNull
-    @Column(name = "budget_id")
-    private int budgetId;
+    @OneToOne
+    private Budget budget;
 }
