@@ -1,6 +1,7 @@
-package pl.blazejherzog.mywallet;
+package pl.blazejherzog.mywallet.users;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import pl.blazejherzog.mywallet.users.User;
 
 import java.util.Optional;
 

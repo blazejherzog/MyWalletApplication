@@ -1,4 +1,4 @@
-package pl.blazejherzog.mywallet;
+package pl.blazejherzog.mywallet.transactions;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

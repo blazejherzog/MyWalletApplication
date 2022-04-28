@@ -1,4 +1,4 @@
-package pl.blazejherzog.mywallet;
+package pl.blazejherzog.mywallet.users;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
