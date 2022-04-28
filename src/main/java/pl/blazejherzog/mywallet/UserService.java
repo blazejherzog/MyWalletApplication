@@ -29,7 +29,7 @@ public class UserService {
     public ResponseEntity addUser(@RequestBody User user) {
         Optional<User> userFromDb = userRepository.findByUserEmail(user.getUserEmail());
 
-        if (userFromDb.isPresent()) {
+        if (userFromDb.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
 
@@ -37,7 +37,7 @@ public class UserService {
         return ResponseEntity.ok(savedUser);
     }
 
-    @PostMapping
+    @PostMapping("/login")
     public ResponseEntity login(@RequestBody User user) {
         Optional<User> userFromDb = userRepository.findByUserEmail(user.getUserEmail());
         if (userFromDb.isEmpty() || wrongPassword(userFromDb, user)) {

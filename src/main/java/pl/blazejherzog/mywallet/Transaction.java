@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "transactions")
-@NoArgsConstructor
+@RequiredArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
@@ -33,4 +33,7 @@ public class Transaction {
 
     @ManyToOne
     private Budget budget;
+
+    @ManyToOne
+    private User user;
 }
