@@ -29,7 +29,7 @@ public class UserService {
     public ResponseEntity addUser(@RequestBody User user) {
         Optional<User> userFromDb = userRepository.findByUserEmail(user.getUserEmail());
 
-        if (userFromDb.isEmpty()) {
+        if (userFromDb.isPresent()) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
 

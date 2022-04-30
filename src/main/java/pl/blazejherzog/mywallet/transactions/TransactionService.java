@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.blazejherzog.mywallet.Budget;
+import pl.blazejherzog.mywallet.CategoryRepository;
 import pl.blazejherzog.mywallet.Subcategory;
 import pl.blazejherzog.mywallet.users.User;
 import pl.blazejherzog.mywallet.users.UserRepository;
@@ -24,6 +25,9 @@ public class TransactionService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    CategoryRepository categoryRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -48,6 +52,7 @@ public class TransactionService {
     }
 
 
+    @GetMapping("/transactions{id}")
     public ResponseEntity getTransactionById(int transactionId) throws JsonProcessingException {
         List<Transaction> filteredTransactions = transactionRepository.findAll().stream()
                 .filter(transaction -> transaction.getId() == transactionId)
@@ -56,16 +61,17 @@ public class TransactionService {
     }
 
 
+    @GetMapping("transactions{name}")
     public ResponseEntity getTransactionsByName(String name) throws JsonProcessingException {
         List<Transaction> filteredTransactions = transactionRepository.findAll().stream()
-                .filter(transaction -> transaction.getName() == name)
+                .filter(transaction -> transaction.getName().equals(name))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(objectMapper.writeValueAsString(filteredTransactions));
     }
 
     @DeleteMapping("/transactions")
     public void deleteTransactionById(int transactionId) {
-        transactionRepository.deleteById((long) transactionId);
+        transactionRepository.deleteById(transactionId);
     }
 
     @DeleteMapping("/transaction")
@@ -89,7 +95,7 @@ public class TransactionService {
                 .budget(budget)
                 .user(user)
                 .build();
-        Optional<Transaction> transaction = transactionRepository.findById((long) id).map(savedTransaction -> transactionRepository.save(updatedTransaction));
+        Optional<Transaction> transaction = transactionRepository.findById(id).map(savedTransaction -> transactionRepository.save(updatedTransaction));
         return ResponseEntity.ok(transaction);
     }
 
