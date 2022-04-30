@@ -6,9 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.blazejherzog.mywallet.Budget;
+import pl.blazejherzog.mywallet.Subcategory;
 import pl.blazejherzog.mywallet.users.User;
 import pl.blazejherzog.mywallet.users.UserRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,20 +47,50 @@ public class TransactionService {
         return ResponseEntity.ok(objectMapper.writeValueAsString(transactions));
     }
 
-    @DeleteMapping("/transactions")
-    public ResponseEntity deleteTransactionById(int transactionId) throws JsonProcessingException {
-        List<Transaction> transactions = transactionRepository.findAll().stream()
-                .filter(transaction -> transaction.getId() != transactionId)
+
+    public ResponseEntity getTransactionById(int transactionId) throws JsonProcessingException {
+        List<Transaction> filteredTransactions = transactionRepository.findAll().stream()
+                .filter(transaction -> transaction.getId() == transactionId)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(objectMapper.writeValueAsString(transactions));
+        return ResponseEntity.ok(objectMapper.writeValueAsString(filteredTransactions));
+    }
+
+
+    public ResponseEntity getTransactionsByName(String name) throws JsonProcessingException {
+        List<Transaction> filteredTransactions = transactionRepository.findAll().stream()
+                .filter(transaction -> transaction.getName() == name)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(objectMapper.writeValueAsString(filteredTransactions));
     }
 
     @DeleteMapping("/transactions")
-    public ResponseEntity deleteTransactionByName(String transactionName) throws JsonProcessingException {
-        List<Transaction> transactions = transactionRepository.findAll().stream()
-                .filter(transaction -> transaction.getName() != transactionName)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(objectMapper.writeValueAsString(transactions));
+    public void deleteTransactionById(int transactionId) {
+        transactionRepository.deleteById((long) transactionId);
+    }
+
+    @DeleteMapping("/transaction")
+    public void deleteTransactionByName(String transactionName) {
+        List<Transaction> transactions = transactionRepository.findAll();
+        for (Transaction transaction : transactions) {
+            if (transaction.getName().equals(transactionName)) {
+                transactionRepository.delete(transaction);
+            }
+        }
+    }
+
+    @PutMapping("/transactions")
+    public ResponseEntity updateTransaction (int id, String name, LocalDate date, int amount, Subcategory subcategory, Budget budget, User user) {
+        Transaction updatedTransaction = Transaction.builder()
+                .id(id)
+                .name(name)
+                .date(date)
+                .amount(amount)
+                .subcategory(subcategory)
+                .budget(budget)
+                .user(user)
+                .build();
+        Optional<Transaction> transaction = transactionRepository.findById((long) id).map(savedTransaction -> transactionRepository.save(updatedTransaction));
+        return ResponseEntity.ok(transaction);
     }
 
 }
