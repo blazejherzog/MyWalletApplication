@@ -7,8 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.blazejherzog.mywallet.Budget;
-import pl.blazejherzog.mywallet.CategoryRepository;
-import pl.blazejherzog.mywallet.Subcategory;
+import pl.blazejherzog.mywallet.categories.CategoryRepository;
+import pl.blazejherzog.mywallet.subcategories.Subcategory;
 import pl.blazejherzog.mywallet.users.User;
 import pl.blazejherzog.mywallet.users.UserRepository;
 
@@ -33,8 +33,8 @@ public class TransactionService {
     ObjectMapper objectMapper;
 
     @PostMapping("/transactions")
-    public ResponseEntity addTransaction (@RequestHeader User user, @RequestBody Transaction transaction) {
-        Optional<User> userFromDb = userRepository.findByUserEmail(user.getUserEmail());
+    public ResponseEntity addTransaction (@RequestHeader String userMail, @RequestBody Transaction transaction) {
+        Optional<User> userFromDb = userRepository.findByUserEmail(userMail);
 
         if (userFromDb.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -69,12 +69,17 @@ public class TransactionService {
         return ResponseEntity.ok(objectMapper.writeValueAsString(filteredTransactions));
     }
 
-    @DeleteMapping("/transactions")
+    @DeleteMapping("/transactions{transactionId}")
     public void deleteTransactionById(int transactionId) {
-        transactionRepository.deleteById(transactionId);
+        List<Transaction> transactions = transactionRepository.findAll();
+        for (Transaction transaction : transactions) {
+            if (transaction.getId() == transactionId) {
+                transactionRepository.deleteById(transactionId);
+            }
+        }
     }
 
-    @DeleteMapping("/transaction")
+    @DeleteMapping("/transactions{transactionName}")
     public void deleteTransactionByName(String transactionName) {
         List<Transaction> transactions = transactionRepository.findAll();
         for (Transaction transaction : transactions) {

@@ -1,4 +1,4 @@
-package pl.blazejherzog.mywallet;
+package pl.blazejherzog.mywallet.categories;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,8 +37,41 @@ public class CategoryService {
         if (userFromDb.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        Category addedCategory = new Category(category.getId(), category.getName(), category.getUser());
+        Category addedCategory = new Category(category.getId(), category.getCategoryName(), category.getUser());
         Category savedCategory = categoryRepository.save(addedCategory);
         return ResponseEntity.ok(savedCategory);
+    }
+
+    @DeleteMapping("/categories{categoryId}")
+    public void deleteCategoryById(int categoryId) {
+        List<Category> categories = categoryRepository.findAll();
+        for (Category category : categories) {
+            if (category.getId() == categoryId) {
+                categoryRepository.deleteById(categoryId);
+            }
+        }
+    }
+
+    @DeleteMapping("/categories{categoryName}")
+    public void deleteCategoryByName(String categoryName) {
+        List<Category> categories = categoryRepository.findAll();
+        for (Category category : categories) {
+            if (category.getCategoryName().equals(categoryName)) {
+                categoryRepository.delete(category);
+            }
+        }
+    }
+
+    @PutMapping("/categories")
+    public ResponseEntity updateCategory (int id, String name, User user) {
+        Category updatedCategory = Category.builder()
+                .id(id)
+                .categoryName(name)
+                .user(user)
+                .build();
+        Optional<Category> category = categoryRepository.findById(id)
+                .map(savedCategory -> categoryRepository.save(updatedCategory));
+        return ResponseEntity.ok(category);
+
     }
 }

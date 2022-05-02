@@ -2,7 +2,7 @@ package pl.blazejherzog.mywallet.transactions;
 
 import lombok.*;
 import pl.blazejherzog.mywallet.Budget;
-import pl.blazejherzog.mywallet.Subcategory;
+import pl.blazejherzog.mywallet.subcategories.Subcategory;
 import pl.blazejherzog.mywallet.users.User;
 
 import javax.persistence.*;

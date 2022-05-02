@@ -1,6 +1,7 @@
 package pl.blazejherzog.mywallet;
 
 import lombok.*;
+import pl.blazejherzog.mywallet.subcategories.Subcategory;
 
 import javax.persistence.*;
 
