@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 public class UserService {
@@ -26,7 +28,8 @@ public class UserService {
     }
 
     @PostMapping("/users")
-    public ResponseEntity addUser(@RequestBody User user) {
+    public ResponseEntity addUser(@RequestBody User user) throws JsonProcessingException {
+
         Optional<User> userFromDb = userRepository.findByUserEmail(user.getUserEmail());
 
         if (userFromDb.isPresent()) {
@@ -34,7 +37,7 @@ public class UserService {
         }
 
         User savedUser = userRepository.save(user);
-        return ResponseEntity.ok(savedUser);
+        return ResponseEntity.ok(objectMapper.writeValueAsString(savedUser));
     }
 
     @PostMapping("/login")
@@ -48,5 +51,26 @@ public class UserService {
 
     private boolean wrongPassword(Optional<User> userFromDb, User user) {
         return !userFromDb.get().getPassword().equals(user.getPassword());
+    }
+
+    @DeleteMapping("/users")
+    public void deleteAllUsers() {
+        userRepository.deleteAll();
+    }
+
+
+    @DeleteMapping("/users/{userEmail}")
+    public void deleteUserByEmail(@PathVariable String userEmail) {
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            if (user.getUserEmail().equals(userEmail)) {
+                userRepository.delete(user);
+            }
+        }
+    }
+
+    @DeleteMapping("users/{userId}")
+    public void deleteUserById(@PathVariable int userId) {
+        userRepository.deleteById(userId);
     }
 }

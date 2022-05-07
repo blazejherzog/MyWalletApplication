@@ -1,9 +1,11 @@
 package pl.blazejherzog.mywallet.categories;
 
 import lombok.*;
+import pl.blazejherzog.mywallet.subcategories.Subcategory;
 import pl.blazejherzog.mywallet.users.User;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "categories")
@@ -24,4 +26,7 @@ public class Category {
 
     @ManyToOne
     private User user;
+
+    @OneToMany(mappedBy = "category")
+    private List<Subcategory> subcategoryList;
 }

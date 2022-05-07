@@ -37,7 +37,7 @@ public class CategoryService {
         if (userFromDb.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        Category addedCategory = new Category(category.getId(), category.getCategoryName(), category.getUser());
+        Category addedCategory = new Category(category.getId(), category.getCategoryName(), category.getUser(), category.getSubcategoryList());
         Category savedCategory = categoryRepository.save(addedCategory);
         return ResponseEntity.ok(savedCategory);
     }

@@ -11,7 +11,6 @@ import javax.persistence.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@RequiredArgsConstructor
 @ToString
 public class User {
 
@@ -20,23 +19,26 @@ public class User {
     @Column(name = "id")
     private int userId;
 
-    @NonNull
+    @Column(name = "nickname")
+    private String nickName;
+
+
     @Column(name = "first_name")
     private String firstName;
 
-    @NonNull
+
     @Column(name = "last_name")
     private String lastName;
 
-    @NonNull
+
     @Column(name = "email")
     private String userEmail;
 
-    @NonNull
+
     @Column(name = "password")
     private String password;
 
-    @NonNull
-    @OneToOne
-    private Budget budget;
+
+//    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
+//    private Budget budget;
 }

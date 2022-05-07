@@ -1,6 +1,7 @@
 package pl.blazejherzog.mywallet;
 
 import lombok.*;
+import pl.blazejherzog.mywallet.users.User;
 
 import javax.persistence.*;
 
@@ -20,5 +21,9 @@ public class Budget {
 
     @Column(name = "amount")
     private int amount;
+
+    @OneToOne()
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
 }

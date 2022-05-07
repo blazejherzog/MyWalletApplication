@@ -33,16 +33,15 @@ public class TransactionService {
     ObjectMapper objectMapper;
 
     @PostMapping("/transactions")
-    public ResponseEntity addTransaction (@RequestHeader String userMail, @RequestBody Transaction transaction) {
-        Optional<User> userFromDb = userRepository.findByUserEmail(userMail);
+    public ResponseEntity addTransaction (@RequestBody Transaction transaction) {
+        Optional<User> userFromDb = userRepository.findById(transaction.getUser().getUserId());
 
         if (userFromDb.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        Transaction addedTransaction = new Transaction(transaction.getId(), transaction.getName(), transaction.getDate(), transaction.getAmount(), transaction.getSubcategory(), transaction.getBudget(), userFromDb.get());
-        Transaction savedTransaction = transactionRepository.save(addedTransaction);
+        Transaction addedTransaction = transactionRepository.save(transaction);
 
-        return ResponseEntity.ok(savedTransaction);
+        return ResponseEntity.ok(addedTransaction);
     }
 
     @GetMapping("/transactions")
@@ -52,8 +51,8 @@ public class TransactionService {
     }
 
 
-    @GetMapping("/transactions{id}")
-    public ResponseEntity getTransactionById(int transactionId) throws JsonProcessingException {
+    @GetMapping("/transactions/{transactionId}")
+    public ResponseEntity getTransactionById(@PathVariable int transactionId) throws JsonProcessingException {
         List<Transaction> filteredTransactions = transactionRepository.findAll().stream()
                 .filter(transaction -> transaction.getId() == transactionId)
                 .collect(Collectors.toList());
@@ -61,26 +60,21 @@ public class TransactionService {
     }
 
 
-    @GetMapping("transactions{name}")
-    public ResponseEntity getTransactionsByName(String name) throws JsonProcessingException {
+    @GetMapping("transactions/{name}")
+    public ResponseEntity getTransactionsByName(@PathVariable String name) throws JsonProcessingException {
         List<Transaction> filteredTransactions = transactionRepository.findAll().stream()
                 .filter(transaction -> transaction.getName().equals(name))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(objectMapper.writeValueAsString(filteredTransactions));
     }
 
-    @DeleteMapping("/transactions{transactionId}")
-    public void deleteTransactionById(int transactionId) {
-        List<Transaction> transactions = transactionRepository.findAll();
-        for (Transaction transaction : transactions) {
-            if (transaction.getId() == transactionId) {
-                transactionRepository.deleteById(transactionId);
-            }
-        }
+    @DeleteMapping("/transactions/{transactionId}")
+    public void deleteTransactionById(@PathVariable int transactionId) {
+        transactionRepository.deleteById(transactionId);
     }
 
     @DeleteMapping("/transactions{transactionName}")
-    public void deleteTransactionByName(String transactionName) {
+    public void deleteTransactionByName(@PathVariable String transactionName) {
         List<Transaction> transactions = transactionRepository.findAll();
         for (Transaction transaction : transactions) {
             if (transaction.getName().equals(transactionName)) {
