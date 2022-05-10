@@ -1,7 +1,7 @@
 package pl.blazejherzog.mywallet.transactions;
 
 import lombok.*;
-import pl.blazejherzog.mywallet.Budget;
+import pl.blazejherzog.mywallet.budgets.Budget;
 import pl.blazejherzog.mywallet.subcategories.Subcategory;
 import pl.blazejherzog.mywallet.users.User;
 
@@ -33,11 +33,11 @@ public class Transaction {
     private int amount;
 
     @ManyToOne
+    @JoinColumn(name = "subcategory_id")
     private Subcategory subcategory;
 
     @ManyToOne
+    @JoinColumn(name = "budget_id")
     private Budget budget;
 
-    @ManyToOne
-    private User user;
 }

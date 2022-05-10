@@ -1,4 +1,4 @@
-package pl.blazejherzog.mywallet;
+package pl.blazejherzog.mywallet.budgets;
 
 import lombok.*;
 import pl.blazejherzog.mywallet.users.User;

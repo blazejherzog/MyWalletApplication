@@ -24,5 +24,6 @@ public class Subcategory {
     private String name;
 
     @ManyToOne
+    @JoinColumn(name = "category_id")
     private Category category;
 }

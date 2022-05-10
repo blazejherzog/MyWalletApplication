@@ -1,6 +1,7 @@
-package pl.blazejherzog.mywallet;
+package pl.blazejherzog.mywallet.budgetedAmounts;
 
 import lombok.*;
+import pl.blazejherzog.mywallet.months.Month;
 import pl.blazejherzog.mywallet.subcategories.Subcategory;
 
 import javax.persistence.*;
@@ -18,10 +19,8 @@ public class BudgetedAmount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne
-    private Subcategory subcategory;
-
-    @ManyToOne
+    @OneToOne
+    @JoinColumn(name = "month_id", nullable = false)
     private Month month;
 
     @Column(name = "budgeted_amount")

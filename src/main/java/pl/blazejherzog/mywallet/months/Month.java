@@ -1,4 +1,4 @@
-package pl.blazejherzog.mywallet;
+package pl.blazejherzog.mywallet.months;
 
 import lombok.*;
 
@@ -14,8 +14,8 @@ import javax.persistence.*;
 public class Month {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "id")
+    private String id;
 
     @Column(name = "name")
     private String name;

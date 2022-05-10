@@ -1,7 +1,7 @@
 package pl.blazejherzog.mywallet.users;
 
 import lombok.*;
-import pl.blazejherzog.mywallet.Budget;
+import pl.blazejherzog.mywallet.budgets.Budget;
 
 import javax.persistence.*;
 
@@ -38,7 +38,4 @@ public class User {
     @Column(name = "password")
     private String password;
 
-
-//    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
-//    private Budget budget;
 }

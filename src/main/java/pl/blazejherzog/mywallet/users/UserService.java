@@ -69,8 +69,19 @@ public class UserService {
         }
     }
 
-    @DeleteMapping("users/{userId}")
+    @DeleteMapping("/users/{userId}")
     public void deleteUserById(@PathVariable int userId) {
         userRepository.deleteById(userId);
+    }
+
+    @PutMapping("/users/{userId}")
+    public ResponseEntity updateUser(@PathVariable int userId, @RequestBody User user) throws JsonProcessingException {
+        Optional<User> userFromDb = userRepository.findById(userId);
+        if (userFromDb.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
+        user.setUserId(userFromDb.get().getUserId());
+        User savedUser = userRepository.save(user);
+        return ResponseEntity.ok(objectMapper.writeValueAsString(savedUser));
     }
 }

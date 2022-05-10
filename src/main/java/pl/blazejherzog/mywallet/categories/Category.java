@@ -1,6 +1,7 @@
 package pl.blazejherzog.mywallet.categories;
 
 import lombok.*;
+import pl.blazejherzog.mywallet.budgets.Budget;
 import pl.blazejherzog.mywallet.subcategories.Subcategory;
 import pl.blazejherzog.mywallet.users.User;
 
@@ -25,8 +26,7 @@ public class Category {
     private String categoryName;
 
     @ManyToOne
-    private User user;
+    @JoinColumn(name = "budget_id")
+    private Budget budget;
 
-    @OneToMany(mappedBy = "category")
-    private List<Subcategory> subcategoryList;
 }

@@ -6,11 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.blazejherzog.mywallet.budgets.Budget;
+import pl.blazejherzog.mywallet.budgets.BudgetRepository;
 import pl.blazejherzog.mywallet.users.User;
 import pl.blazejherzog.mywallet.users.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 public class CategoryService {
@@ -19,7 +22,7 @@ public class CategoryService {
     CategoryRepository categoryRepository;
 
     @Autowired
-    UserRepository userRepository;
+    BudgetRepository budgetRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -30,30 +33,36 @@ public class CategoryService {
         return ResponseEntity.ok(objectMapper.writeValueAsString(categories));
     }
 
-    @PostMapping("/categories")
-    public ResponseEntity addCategory(@RequestHeader String userEmail, @RequestBody Category category) {
-        Optional<User> userFromDb = userRepository.findByUserEmail(userEmail);
+    @GetMapping("/budget/{budgetId}/categories")
+    public ResponseEntity getCategoriesByBudgetId(@PathVariable int budgetId) throws JsonProcessingException {
+        Optional<Budget> budgetFromDb = budgetRepository.findById(budgetId);
+        if (budgetFromDb.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
+        List<Category> categoriesByBudget = categoryRepository.findAll().stream()
+                .filter(category -> category.getBudget().getBudgetId() == budgetId)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(objectMapper.writeValueAsString(categoriesByBudget));
+    }
 
-        if (userFromDb.isEmpty()) {
+    @PostMapping("/categories")
+    public ResponseEntity addCategory(@RequestBody Category category) {
+        Optional<Budget> budgetFromDb = budgetRepository.findById(category.getBudget().getBudgetId());
+
+        if (budgetFromDb.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        Category addedCategory = new Category(category.getId(), category.getCategoryName(), category.getUser(), category.getSubcategoryList());
-        Category savedCategory = categoryRepository.save(addedCategory);
+        Category savedCategory = categoryRepository.save(category);
         return ResponseEntity.ok(savedCategory);
     }
 
-    @DeleteMapping("/categories{categoryId}")
-    public void deleteCategoryById(int categoryId) {
-        List<Category> categories = categoryRepository.findAll();
-        for (Category category : categories) {
-            if (category.getId() == categoryId) {
-                categoryRepository.deleteById(categoryId);
-            }
-        }
+    @DeleteMapping("/categories/{categoryId}")
+    public void deleteCategoryById(@PathVariable int categoryId) {
+        categoryRepository.deleteById(categoryId);
     }
 
-    @DeleteMapping("/categories{categoryName}")
-    public void deleteCategoryByName(String categoryName) {
+    @DeleteMapping("/categories")
+    public void deleteCategoryByName(@RequestParam(value = "categoryName") String categoryName) {
         List<Category> categories = categoryRepository.findAll();
         for (Category category : categories) {
             if (category.getCategoryName().equals(categoryName)) {
@@ -62,16 +71,25 @@ public class CategoryService {
         }
     }
 
-    @PutMapping("/categories")
-    public ResponseEntity updateCategory (int id, String name, User user) {
-        Category updatedCategory = Category.builder()
-                .id(id)
-                .categoryName(name)
-                .user(user)
-                .build();
-        Optional<Category> category = categoryRepository.findById(id)
-                .map(savedCategory -> categoryRepository.save(updatedCategory));
-        return ResponseEntity.ok(category);
+    @DeleteMapping("/allcategories")
+    public void deleteAllCategories() {
+        categoryRepository.deleteAll();
+    }
 
+
+    @PutMapping("/categories/{id}")
+    public ResponseEntity updateCategory (@PathVariable int id, @RequestBody Category category) throws JsonProcessingException {
+        Optional<Budget> userFromDb = budgetRepository.findById(category.getBudget().getBudgetId());
+        if (userFromDb.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
+        Optional<Category> categoryFromDb = categoryRepository.findById(id);
+        if (categoryFromDb.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
+        category.setBudget(userFromDb.get());
+        category.setId(categoryFromDb.get().getId());
+        Category updatedCategory = categoryRepository.save(category);
+        return ResponseEntity.ok(objectMapper.writeValueAsString(updatedCategory));
     }
 }

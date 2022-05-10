@@ -8,9 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.blazejherzog.mywallet.categories.Category;
 import pl.blazejherzog.mywallet.categories.CategoryRepository;
+import pl.blazejherzog.mywallet.users.User;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RestController
@@ -31,29 +33,35 @@ public class SubcategoryService {
         return ResponseEntity.ok(objectMapper.writeValueAsString(subcategories));
     }
 
-    @PostMapping("/subcategories")
-    public ResponseEntity addSubcategory(@RequestHeader String categoryName, @RequestBody Subcategory subcategory) {
+    @GetMapping("/subcategories/{categoryName}")
+    public ResponseEntity getSubcategoriesByCategoryName(@PathVariable String categoryName) throws JsonProcessingException {
         Optional<Category> categoryFromDb = categoryRepository.findByCategoryName(categoryName);
+        if (categoryFromDb.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
+        List<Subcategory> subcategoriesByCategory = subcategoryRepository.findAll().stream()
+                .filter(subcategory -> subcategory.getCategory().getCategoryName().equals(categoryName))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(objectMapper.writeValueAsString(subcategoriesByCategory));
+    }
+
+    @PostMapping("/subcategories")
+    public ResponseEntity addSubcategory(@RequestBody Subcategory subcategory) {
+        Optional<Category> categoryFromDb = categoryRepository.findById(subcategory.getCategory().getId());
         if (categoryFromDb.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        Subcategory addedSubcategory = new Subcategory(subcategory.getId(), subcategory.getName(), subcategory.getCategory());
-        Subcategory savedSubcategory = subcategoryRepository.save(addedSubcategory);
+        Subcategory savedSubcategory = subcategoryRepository.save(subcategory);
         return ResponseEntity.ok(savedSubcategory);
     }
 
-    @DeleteMapping("/subcategories{subcategoryId}")
-    public void deleteSubcategoryById(int subcategoryId) {
-        List<Subcategory> subcategories = subcategoryRepository.findAll();
-        for (Subcategory subcategory : subcategories) {
-            if (subcategory.getId() == subcategoryId) {
-                subcategoryRepository.delete(subcategory);
-            }
-        }
+    @DeleteMapping("/subcategories/{subcategoryId}")
+    public void deleteSubcategoryById(@PathVariable int subcategoryId) {
+        subcategoryRepository.deleteById(subcategoryId);
     }
 
-    @DeleteMapping("/subcategories{subcategoryName}")
-    public void deleteSubcategoryByName(String subcategoryName) {
+    @DeleteMapping("/subcategories")
+    public void deleteSubcategoryByName(@RequestParam(value = "subcategoryName") String subcategoryName) {
         List<Subcategory> subcategories = subcategoryRepository.findAll();
         for (Subcategory subcategory : subcategories) {
             if (subcategory.getName().equals(subcategoryName)) {
@@ -62,15 +70,20 @@ public class SubcategoryService {
         }
     }
 
-    @PutMapping("/subcategories")
-    public ResponseEntity updateSubcategory(int id, String name, Category category) {
-        Subcategory updatedSubcategory = Subcategory.builder()
-                .id(id)
-                .name(name)
-                .category(category)
-                .build();
-        Optional<Subcategory> subcategory = subcategoryRepository.findById(id)
-                .map(savedSubcategory -> subcategoryRepository.save(updatedSubcategory));
-        return ResponseEntity.ok(subcategory);
+    @PutMapping("/subcategories/{id}")
+    public ResponseEntity updateSubcategory (@PathVariable int id, @RequestBody Subcategory subcategory) throws JsonProcessingException {
+        Optional<Category> categoryFromDb = categoryRepository.findById(subcategory.getCategory().getId());
+        if (categoryFromDb.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
     }
+        Optional<Subcategory> subcategoryFromDb = subcategoryRepository.findById(id);
+        if (subcategoryFromDb.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
+        subcategory.setCategory(categoryFromDb.get());
+        subcategory.setId(subcategoryFromDb.get().getId());
+        Subcategory updatedSubcategory = subcategoryRepository.save(subcategory);
+        return ResponseEntity.ok(objectMapper.writeValueAsString(updatedSubcategory));
+    }
+
 }
