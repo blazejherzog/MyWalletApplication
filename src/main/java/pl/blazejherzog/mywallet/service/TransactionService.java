@@ -1,4 +1,4 @@
-package pl.blazejherzog.mywallet.transactions;
+package pl.blazejherzog.mywallet.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,11 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.blazejherzog.mywallet.budgets.Budget;
-import pl.blazejherzog.mywallet.budgets.BudgetRepository;
-import pl.blazejherzog.mywallet.categories.CategoryRepository;
-import pl.blazejherzog.mywallet.users.User;
-import pl.blazejherzog.mywallet.users.UserRepository;
+import pl.blazejherzog.mywallet.model.Budget;
+import pl.blazejherzog.mywallet.model.Transaction;
+import pl.blazejherzog.mywallet.repositories.BudgetRepository;
+import pl.blazejherzog.mywallet.repositories.CategoryRepository;
+import pl.blazejherzog.mywallet.repositories.TransactionRepository;
+import pl.blazejherzog.mywallet.repositories.UserRepository;
 
 import java.util.List;
 import java.util.Optional;

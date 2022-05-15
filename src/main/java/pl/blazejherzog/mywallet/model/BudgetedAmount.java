@@ -1,13 +1,11 @@
-package pl.blazejherzog.mywallet.budgetedAmounts;
+package pl.blazejherzog.mywallet.model;
 
 import lombok.*;
-import pl.blazejherzog.mywallet.months.Month;
-import pl.blazejherzog.mywallet.subcategories.Subcategory;
 
 import javax.persistence.*;
 
 @Entity
-@Table(name = "budgeted_amounts_per_subcategories")
+@Table(name = "budgeted_amounts")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -25,4 +23,8 @@ public class BudgetedAmount {
 
     @Column(name = "budgeted_amount")
     private int budgetedAmount;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 }

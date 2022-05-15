@@ -1,6 +1,7 @@
-package pl.blazejherzog.mywallet.months;
+package pl.blazejherzog.mywallet.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import pl.blazejherzog.mywallet.model.Month;
 
 import java.util.Optional;
 

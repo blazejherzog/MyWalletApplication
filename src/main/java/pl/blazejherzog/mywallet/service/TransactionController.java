@@ -1,4 +1,4 @@
-package pl.blazejherzog.mywallet.transactions;
+package pl.blazejherzog.mywallet.service;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

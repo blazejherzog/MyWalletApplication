@@ -1,9 +1,6 @@
-package pl.blazejherzog.mywallet.transactions;
+package pl.blazejherzog.mywallet.model;
 
 import lombok.*;
-import pl.blazejherzog.mywallet.budgets.Budget;
-import pl.blazejherzog.mywallet.subcategories.Subcategory;
-import pl.blazejherzog.mywallet.users.User;
 
 import javax.persistence.*;
 import java.time.LocalDate;

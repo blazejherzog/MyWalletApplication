@@ -1,4 +1,4 @@
-package pl.blazejherzog.mywallet.subcategories;
+package pl.blazejherzog.mywallet.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,14 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.blazejherzog.mywallet.categories.Category;
-import pl.blazejherzog.mywallet.categories.CategoryRepository;
-import pl.blazejherzog.mywallet.users.User;
+import pl.blazejherzog.mywallet.model.Category;
+import pl.blazejherzog.mywallet.model.Subcategory;
+import pl.blazejherzog.mywallet.repositories.CategoryRepository;
+import pl.blazejherzog.mywallet.repositories.SubcategoryRepository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RestController
 public class SubcategoryService {
@@ -60,7 +60,7 @@ public class SubcategoryService {
         subcategoryRepository.deleteById(subcategoryId);
     }
 
-    @DeleteMapping("/subcategories")
+    @DeleteMapping("/subcategories/{subcategoryName}")
     public void deleteSubcategoryByName(@RequestParam(value = "subcategoryName") String subcategoryName) {
         List<Subcategory> subcategories = subcategoryRepository.findAll();
         for (Subcategory subcategory : subcategories) {

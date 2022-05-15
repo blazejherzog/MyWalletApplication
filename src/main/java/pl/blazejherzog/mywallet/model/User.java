@@ -1,8 +1,6 @@
-package pl.blazejherzog.mywallet.users;
+package pl.blazejherzog.mywallet.model;
 
 import lombok.*;
-import pl.blazejherzog.mywallet.budgets.Budget;
-
 import javax.persistence.*;
 
 @Entity
@@ -37,5 +35,4 @@ public class User {
 
     @Column(name = "password")
     private String password;
-
 }

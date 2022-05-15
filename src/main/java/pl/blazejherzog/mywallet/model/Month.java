@@ -1,4 +1,4 @@
-package pl.blazejherzog.mywallet.months;
+package pl.blazejherzog.mywallet.model;
 
 import lombok.*;
 

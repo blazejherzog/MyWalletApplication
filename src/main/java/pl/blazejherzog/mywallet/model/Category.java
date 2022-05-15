@@ -1,12 +1,8 @@
-package pl.blazejherzog.mywallet.categories;
+package pl.blazejherzog.mywallet.model;
 
 import lombok.*;
-import pl.blazejherzog.mywallet.budgets.Budget;
-import pl.blazejherzog.mywallet.subcategories.Subcategory;
-import pl.blazejherzog.mywallet.users.User;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Table(name = "categories")
