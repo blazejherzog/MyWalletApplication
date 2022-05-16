@@ -1,8 +1,10 @@
 package pl.blazejherzog.mywallet.model;
 
 import lombok.*;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "budgeted_amounts")
@@ -17,14 +19,13 @@ public class BudgetedAmount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @OneToOne
-    @JoinColumn(name = "month_id", nullable = false)
-    private Month month;
+    @Column(name = "budgeted_date")
+    private LocalDate budgetedDate;
 
     @Column(name = "budgeted_amount")
     private int budgetedAmount;
 
-    @ManyToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "category_id")
     private Category category;
 }

@@ -1,6 +1,7 @@
 package pl.blazejherzog.mywallet.model;
 
 import lombok.*;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 
@@ -21,7 +22,7 @@ public class Category {
     @Column(name = "name")
     private String categoryName;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "budget_id")
     private Budget budget;
 

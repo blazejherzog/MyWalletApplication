@@ -1,6 +1,7 @@
 package pl.blazejherzog.mywallet.model;
 
 import lombok.*;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -29,11 +30,11 @@ public class Transaction {
     @Column(name = "amount")
     private int amount;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "subcategory_id")
     private Subcategory subcategory;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "budget_id")
     private Budget budget;
 

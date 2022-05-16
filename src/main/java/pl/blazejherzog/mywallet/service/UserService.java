@@ -40,19 +40,6 @@ public class UserService {
         return ResponseEntity.ok(objectMapper.writeValueAsString(savedUser));
     }
 
-    @PostMapping("/login")
-    public ResponseEntity login(@RequestBody User user) {
-        Optional<User> userFromDb = userRepository.findByUserEmail(user.getUserEmail());
-        if (userFromDb.isEmpty() || wrongPassword(userFromDb, user)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        return ResponseEntity.ok().build();
-    }
-
-    private boolean wrongPassword(Optional<User> userFromDb, User user) {
-        return !userFromDb.get().getPassword().equals(user.getPassword());
-    }
-
     @DeleteMapping("/users")
     public void deleteAllUsers() {
         userRepository.deleteAll();

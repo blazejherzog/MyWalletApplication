@@ -7,10 +7,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.blazejherzog.mywallet.model.BudgetedAmount;
-import pl.blazejherzog.mywallet.model.Month;
-import pl.blazejherzog.mywallet.repositories.MonthRepository;
+import pl.blazejherzog.mywallet.model.Category;
 import pl.blazejherzog.mywallet.repositories.BudgetedAmountRepository;
+import pl.blazejherzog.mywallet.repositories.CategoryRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,54 +23,72 @@ public class BudgetedAmountService {
     BudgetedAmountRepository budgetedAmountRepository;
 
     @Autowired
-    MonthRepository monthRepository;
+    CategoryRepository categoryRepository;
 
     @Autowired
     ObjectMapper objectMapper;
 
-    @PostMapping("/budgetedamount")
-    public ResponseEntity addBudgetedAmount(@RequestBody BudgetedAmount budgetedAmount) throws JsonProcessingException {
-        Optional<Month> monthFromDb = monthRepository.findById(budgetedAmount.getMonth().getId());
-        if (monthFromDb.isEmpty()) {
+    @GetMapping("/budgetedamounts/{budgetedDate}")
+    public ResponseEntity getBudgetedAmountsByMonth(@PathVariable LocalDate budgetedDate) throws JsonProcessingException {
+        List<BudgetedAmount> budgetsByMonth = budgetedAmountRepository.findAll().stream()
+                .filter(budgetedAmount -> budgetedAmount.getBudgetedDate().getMonth().equals(budgetedDate.getMonth()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(objectMapper.writeValueAsString(budgetsByMonth));
+    }
+
+    @GetMapping("/budgetedamounts")
+    public ResponseEntity getBudgetedAmountsByCategory(@RequestParam(value = "categoryName") String categoryName) throws JsonProcessingException {
+        List<BudgetedAmount> budgetsByCategory = budgetedAmountRepository.findAll().stream()
+                .filter(budgetedAmount -> budgetedAmount.getCategory().getCategoryName().equals(categoryName))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(objectMapper.writeValueAsString(budgetsByCategory));
+    }
+
+    @GetMapping("/budgetedamounts/months/{budgetedDate}/{categoryName}")
+    public ResponseEntity getBudgetedAmountByMonthAndCategory(@PathVariable LocalDate budgetedDate, @PathVariable String categoryName) throws JsonProcessingException {
+        Optional<BudgetedAmount> budgetedAmountByCategoryAndDate = budgetedAmountRepository.findAll().stream()
+                .filter(budgetedAmount -> budgetedAmount.getBudgetedDate().getMonth().equals(budgetedDate.getMonth()))
+                .filter(budgetedAmount -> budgetedAmount.getCategory().getCategoryName().equals(categoryName))
+                .findFirst();
+        if (budgetedAmountByCategoryAndDate.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(objectMapper.writeValueAsString(budgetedAmountByCategoryAndDate));
+    }
+
+    @PostMapping("/budgetedamounts/{categoryName}")
+    public ResponseEntity addBudgetedAmount(@PathVariable String categoryName, @RequestBody BudgetedAmount budgetedAmount) throws JsonProcessingException {
+        Optional<Category> categoryFromDb = categoryRepository.findAll().stream()
+                .filter(category -> category.getCategoryName().equals(categoryName))
+                .findFirst();
+
+        if (categoryFromDb.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
         BudgetedAmount savedBudgetedAmount = budgetedAmountRepository.save(budgetedAmount);
         return ResponseEntity.ok(objectMapper.writeValueAsString(savedBudgetedAmount));
     }
 
-    @GetMapping("/budgetedamount/month/{monthId}")
-    public ResponseEntity getBudgetedAmountByMonth (@PathVariable String monthId) throws JsonProcessingException {
-        Optional<Month> monthFromDb = monthRepository.findById(monthId);
-        if (monthFromDb.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
-        }
-        Optional<BudgetedAmount> budgetedAmountByMonth = budgetedAmountRepository.findAll().stream()
-                .filter(budgetedAmount -> budgetedAmount.getMonth().getId().equals(monthId))
+    @PutMapping("/budgetedamounts/{budgetedDate}/{categoryName}")
+    public ResponseEntity updateBudgetedAmount(@PathVariable LocalDate budgetedDate, @PathVariable String categoryName, @RequestBody BudgetedAmount budgetedAmount) throws JsonProcessingException {
+        Optional<BudgetedAmount> amountPerCategoryAndMonth = budgetedAmountRepository.findAll().stream()
+                .filter(budgetedAmount1 -> budgetedAmount1.getBudgetedDate().getMonth().equals(budgetedDate.getMonth()))
+                .filter(budgetedAmount1 -> budgetedAmount1.getCategory().getCategoryName().equals(categoryName))
                 .findFirst();
-        return ResponseEntity.ok(objectMapper.writeValueAsString(budgetedAmountByMonth));
+        if (amountPerCategoryAndMonth.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        budgetedAmount.setBudgetedDate(amountPerCategoryAndMonth.get().getBudgetedDate());
+        budgetedAmount.setBudgetedAmount(amountPerCategoryAndMonth.get().getBudgetedAmount());
+        budgetedAmount.setCategory(amountPerCategoryAndMonth.get().getCategory());
+        BudgetedAmount savedBudgetedAmount = budgetedAmountRepository.save(budgetedAmount);
+        return ResponseEntity.ok(objectMapper.writeValueAsString(savedBudgetedAmount));
     }
 
-    @GetMapping("/budgetedamount/year/{year}")
-    public ResponseEntity getBudgetedAmountsByYear (@PathVariable int year) throws JsonProcessingException {
-        List<Month> monthsByYear = monthRepository.findAll().stream()
-                .filter(month -> month.getYear() == year)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(objectMapper.writeValueAsString(monthsByYear));
-    }
-
-    @PutMapping("/budgetedamount/{id}")
-    public ResponseEntity updateBudgetedAmount(@PathVariable int id, @RequestBody BudgetedAmount budgetedAmount) throws JsonProcessingException {
-        Optional<Month> monthFromDb = monthRepository.findById(budgetedAmount.getMonth().getId());
-        if (monthFromDb.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
-        }
-        Optional<BudgetedAmount> budgetedAmountFromDb = budgetedAmountRepository.findById(budgetedAmount.getId());
-        if (budgetedAmountFromDb.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
-        }
-        budgetedAmount.setMonth(monthFromDb.get());
-        budgetedAmount.setId(budgetedAmountFromDb.get().getId());
-        BudgetedAmount saved = budgetedAmountRepository.save(budgetedAmount);
-        return ResponseEntity.ok(objectMapper.writeValueAsString(saved));
+    @DeleteMapping("/budgetedamounts")
+    public void deleteAllBudgetedAmounts() {
+        budgetedAmountRepository.deleteAll();
     }
 }
+
+
