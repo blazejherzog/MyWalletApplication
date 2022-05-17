@@ -22,7 +22,7 @@ public class Category {
     @Column(name = "name")
     private String categoryName;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "budget_id")
     private Budget budget;
 

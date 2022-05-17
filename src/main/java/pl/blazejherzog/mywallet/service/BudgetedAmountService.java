@@ -3,6 +3,7 @@ package pl.blazejherzog.mywallet.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import pl.blazejherzog.mywallet.model.Category;
 import pl.blazejherzog.mywallet.repositories.BudgetedAmountRepository;
 import pl.blazejherzog.mywallet.repositories.CategoryRepository;
 
+import java.text.DateFormat;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +31,7 @@ public class BudgetedAmountService {
     ObjectMapper objectMapper;
 
     @GetMapping("/budgetedamounts/{budgetedDate}")
-    public ResponseEntity getBudgetedAmountsByMonth(@PathVariable LocalDate budgetedDate) throws JsonProcessingException {
+    public ResponseEntity getBudgetedAmountsByMonth(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate budgetedDate) throws JsonProcessingException {
         List<BudgetedAmount> budgetsByMonth = budgetedAmountRepository.findAll().stream()
                 .filter(budgetedAmount -> budgetedAmount.getBudgetedDate().getMonth().equals(budgetedDate.getMonth()))
                 .collect(Collectors.toList());
@@ -45,7 +47,7 @@ public class BudgetedAmountService {
     }
 
     @GetMapping("/budgetedamounts/months/{budgetedDate}/{categoryName}")
-    public ResponseEntity getBudgetedAmountByMonthAndCategory(@PathVariable LocalDate budgetedDate, @PathVariable String categoryName) throws JsonProcessingException {
+    public ResponseEntity getBudgetedAmountByMonthAndCategory(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate budgetedDate, @PathVariable String categoryName) throws JsonProcessingException {
         Optional<BudgetedAmount> budgetedAmountByCategoryAndDate = budgetedAmountRepository.findAll().stream()
                 .filter(budgetedAmount -> budgetedAmount.getBudgetedDate().getMonth().equals(budgetedDate.getMonth()))
                 .filter(budgetedAmount -> budgetedAmount.getCategory().getCategoryName().equals(categoryName))
@@ -70,7 +72,7 @@ public class BudgetedAmountService {
     }
 
     @PutMapping("/budgetedamounts/{budgetedDate}/{categoryName}")
-    public ResponseEntity updateBudgetedAmount(@PathVariable LocalDate budgetedDate, @PathVariable String categoryName, @RequestBody BudgetedAmount budgetedAmount) throws JsonProcessingException {
+    public ResponseEntity updateBudgetedAmount(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate budgetedDate, @PathVariable String categoryName, @RequestBody BudgetedAmount budgetedAmount) throws JsonProcessingException {
         Optional<BudgetedAmount> amountPerCategoryAndMonth = budgetedAmountRepository.findAll().stream()
                 .filter(budgetedAmount1 -> budgetedAmount1.getBudgetedDate().getMonth().equals(budgetedDate.getMonth()))
                 .filter(budgetedAmount1 -> budgetedAmount1.getCategory().getCategoryName().equals(categoryName))
@@ -89,6 +91,7 @@ public class BudgetedAmountService {
     public void deleteAllBudgetedAmounts() {
         budgetedAmountRepository.deleteAll();
     }
+
 }
 
 

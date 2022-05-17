@@ -30,11 +30,11 @@ public class Transaction {
     @Column(name = "amount")
     private int amount;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "subcategory_id")
     private Subcategory subcategory;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "budget_id")
     private Budget budget;
 
