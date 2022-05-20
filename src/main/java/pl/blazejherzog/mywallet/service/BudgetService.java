@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.blazejherzog.mywallet.model.Budget;
 import pl.blazejherzog.mywallet.repositories.BudgetRepository;
 import pl.blazejherzog.mywallet.model.User;
+import pl.blazejherzog.mywallet.repositories.CategoryRepository;
 import pl.blazejherzog.mywallet.repositories.UserRepository;
 
 import java.util.List;
@@ -75,4 +76,5 @@ public class BudgetService {
     public void deleteBudgetById (@PathVariable int budgetId) {
         budgetRepository.deleteById(budgetId);
     }
+
 }

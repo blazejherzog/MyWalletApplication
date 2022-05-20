@@ -27,12 +27,31 @@ public class UserService {
         return ResponseEntity.ok(objectMapper.writeValueAsString(users));
     }
 
+    @GetMapping("/users/nickname/{nickName}")
+    public ResponseEntity getUserByNickName (@PathVariable String nickName) throws JsonProcessingException {
+        Optional<User> userFromDb = userRepository.findByNickName(nickName);
+        if (userFromDb.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(objectMapper.writeValueAsString(userFromDb));
+    }
+
+    @GetMapping("/users/email/{userEmail}")
+    public ResponseEntity getUserByEmail (@PathVariable String userEmail) throws JsonProcessingException {
+        Optional<User> userFromDb = userRepository.findByUserEmail(userEmail);
+        if (userFromDb.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(objectMapper.writeValueAsString(userFromDb));
+    }
+
     @PostMapping("/users")
     public ResponseEntity addUser(@RequestBody User user) throws JsonProcessingException {
 
-        Optional<User> userFromDb = userRepository.findByUserEmail(user.getUserEmail());
+        Optional<User> byUserEmail = userRepository.findByUserEmail(user.getUserEmail());
+        Optional<User> byUserNickName = userRepository.findByNickName(user.getNickName());
 
-        if (userFromDb.isPresent()) {
+        if (byUserEmail.isPresent() || byUserNickName.isPresent()) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
 

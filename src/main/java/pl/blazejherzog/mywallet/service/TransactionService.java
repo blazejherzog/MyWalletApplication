@@ -35,14 +35,18 @@ public class TransactionService {
     @Autowired
     ObjectMapper objectMapper;
 
-    @PostMapping("/transactions")
-    public ResponseEntity addTransaction (@RequestBody Transaction transaction) {
-        Optional<Budget> budgetFromDb = budgetRepository.findById(transaction.getBudget().getBudgetId());
+    @PostMapping("/budgets/{budgetId}/transactions")
+    public ResponseEntity addTransaction (@RequestBody Transaction transaction, @PathVariable int budgetId, Budget budget) {
+        Optional<Budget> budgetFromDb = budgetRepository.findAll().stream()
+                .filter(budget1 -> budget1.getBudgetId() == budgetId)
+                .findFirst();
 
         if (budgetFromDb.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         Transaction addedTransaction = transactionRepository.save(transaction);
+        budgetFromDb.get().setAmount(budgetFromDb.get().getAmount() - addedTransaction.getAmount());
+        budgetRepository.flush();
 
         return ResponseEntity.ok(addedTransaction);
     }
@@ -54,24 +58,24 @@ public class TransactionService {
     }
 
 
-    @GetMapping("/transaction/id")
-    public ResponseEntity getTransactionById(@RequestParam(value = "transactionId") int transactionId) throws JsonProcessingException {
+    @GetMapping("/transactions/id/{id}")
+    public ResponseEntity getTransactionById(@PathVariable int id) throws JsonProcessingException {
         Optional<Transaction> filteredTransaction = transactionRepository.findAll().stream()
-                .filter(transaction -> transaction.getId() == transactionId)
+                .filter(transaction -> transaction.getId() == id)
                 .findFirst();
         return ResponseEntity.ok(objectMapper.writeValueAsString(filteredTransaction));
     }
 
 
-    @GetMapping("transaction/name")
-    public ResponseEntity getTransactionsByName(@RequestParam(value = "name") String name) throws JsonProcessingException {
+    @GetMapping("/transactions/name/{name}")
+    public ResponseEntity getTransactionsByName(@PathVariable String name) throws JsonProcessingException {
         List<Transaction> filteredTransactions = transactionRepository.findAll().stream()
                 .filter(transaction -> transaction.getName().equals(name))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(objectMapper.writeValueAsString(filteredTransactions));
     }
 
-    @GetMapping("/budget/{budgetId}/transactions")
+    @GetMapping("/transactions/budget/{budgetId}")
     public ResponseEntity getTransactionsByBudget(@PathVariable int budgetId) throws JsonProcessingException {
         Optional<Budget> budgetFromDb = budgetRepository.findAll().stream()
                 .filter(budget -> budget.getBudgetId() == budgetId)
@@ -90,13 +94,18 @@ public class TransactionService {
         transactionRepository.deleteById(transactionId);
     }
 
-    @DeleteMapping("/transactions")
-    public void deleteTransactionByName(@RequestParam(value = "transactionName") String transactionName) {
+    @DeleteMapping("/transactions/name/{name}")
+    public void deleteTransactionByName(@PathVariable String name) {
         List<Transaction> transactions = transactionRepository.findAll();
         for (Transaction transaction : transactions) {
-            if (transaction.getName().equals(transactionName)) {
+            if (transaction.getName().equals(name)) {
                 transactionRepository.delete(transaction);
             }
         }
+    }
+
+    @DeleteMapping("/transactions/all")
+    public void deleteAllTransactions() {
+        transactionRepository.deleteAll();
     }
 }

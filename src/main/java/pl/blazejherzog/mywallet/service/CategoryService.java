@@ -35,13 +35,18 @@ public class CategoryService {
 
     @GetMapping("/budget/{budgetId}/categories")
     public ResponseEntity getCategoriesByBudgetId(@PathVariable int budgetId) throws JsonProcessingException {
-        Optional<Budget> budgetFromDb = budgetRepository.findById(budgetId);
+        Optional<Budget> budgetFromDb = budgetRepository.findAll().stream()
+                .filter(budget -> budget.getBudgetId() == budgetId)
+                .findFirst();
         if (budgetFromDb.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         List<Category> categoriesByBudget = categoryRepository.findAll().stream()
                 .filter(category -> category.getBudget().getBudgetId() == budgetId)
                 .collect(Collectors.toList());
+        if (categoriesByBudget.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
         return ResponseEntity.ok(objectMapper.writeValueAsString(categoriesByBudget));
     }
 
@@ -56,13 +61,13 @@ public class CategoryService {
         return ResponseEntity.ok(savedCategory);
     }
 
-    @DeleteMapping("/categories/{categoryId}")
+    @DeleteMapping("/categories/id/{categoryId}")
     public void deleteCategoryById(@PathVariable int categoryId) {
         categoryRepository.deleteById(categoryId);
     }
 
-    @DeleteMapping("/categories")
-    public void deleteCategoryByName(@RequestParam(value = "categoryName") String categoryName) {
+    @DeleteMapping("/categories/name/{categoryName}")
+    public void deleteCategoryByName(@PathVariable String categoryName) {
         List<Category> categories = categoryRepository.findAll();
         for (Category category : categories) {
             if (category.getCategoryName().equals(categoryName)) {
@@ -71,7 +76,7 @@ public class CategoryService {
         }
     }
 
-    @DeleteMapping("/allcategories")
+    @DeleteMapping("/categories")
     public void deleteAllCategories() {
         categoryRepository.deleteAll();
     }

@@ -35,9 +35,11 @@ public class SubcategoryService {
 
     @GetMapping("/subcategories/{categoryName}")
     public ResponseEntity getSubcategoriesByCategoryName(@PathVariable String categoryName) throws JsonProcessingException {
-        Optional<Category> categoryFromDb = categoryRepository.findByCategoryName(categoryName);
+        Optional<Category> categoryFromDb = categoryRepository.findAll().stream()
+                .filter(category -> category.getCategoryName().equals(categoryName))
+                .findFirst();
         if (categoryFromDb.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         List<Subcategory> subcategoriesByCategory = subcategoryRepository.findAll().stream()
                 .filter(subcategory -> subcategory.getCategory().getCategoryName().equals(categoryName))
@@ -61,7 +63,7 @@ public class SubcategoryService {
     }
 
     @DeleteMapping("/subcategories/{subcategoryName}")
-    public void deleteSubcategoryByName(@RequestParam(value = "subcategoryName") String subcategoryName) {
+    public void deleteSubcategoryByName(@PathVariable String subcategoryName) {
         List<Subcategory> subcategories = subcategoryRepository.findAll();
         for (Subcategory subcategory : subcategories) {
             if (subcategory.getName().equals(subcategoryName)) {
