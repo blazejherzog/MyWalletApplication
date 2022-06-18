@@ -25,7 +25,7 @@ public class BudgetedAmount {
     @Column(name = "budgeted_amount")
     private int budgetedAmount;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "category_id")
     private Category category;
 }

@@ -2,10 +2,12 @@ package pl.blazejherzog.mywallet.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.blazejherzog.mywallet.dto.SubcategoryDTO;
 import pl.blazejherzog.mywallet.model.Category;
 import pl.blazejherzog.mywallet.model.Subcategory;
 import pl.blazejherzog.mywallet.repositories.CategoryRepository;
@@ -27,24 +29,25 @@ public class SubcategoryService {
     @Autowired
     ObjectMapper objectMapper;
 
+    @Autowired
+    ModelMapper modelMapper;
+
     @GetMapping("/subcategories")
-    public ResponseEntity getSubcategories() throws JsonProcessingException {
-        List<Subcategory> subcategories = subcategoryRepository.findAll();
-        return ResponseEntity.ok(objectMapper.writeValueAsString(subcategories));
+    public ResponseEntity getSubcategories() {
+        List<SubcategoryDTO> subcategories = subcategoryRepository.findAll()
+                .stream().map(subcategory -> modelMapper.map(subcategory, SubcategoryDTO.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(subcategories);
     }
 
-    @GetMapping("/subcategories/{categoryName}")
-    public ResponseEntity getSubcategoriesByCategoryName(@PathVariable String categoryName) throws JsonProcessingException {
-        Optional<Category> categoryFromDb = categoryRepository.findAll().stream()
-                .filter(category -> category.getCategoryName().equals(categoryName))
-                .findFirst();
-        if (categoryFromDb.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+    @GetMapping("/subcategories/name/{categoryName}")
+    public ResponseEntity getSubcategoriesByCategoryName(@PathVariable String categoryName) {
         List<Subcategory> subcategoriesByCategory = subcategoryRepository.findAll().stream()
                 .filter(subcategory -> subcategory.getCategory().getCategoryName().equals(categoryName))
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(objectMapper.writeValueAsString(subcategoriesByCategory));
+        List<SubcategoryDTO> subcategoryDTOList = subcategoriesByCategory.stream().map(subcategory -> modelMapper.map(subcategory, SubcategoryDTO.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(subcategoryDTOList);
     }
 
     @PostMapping("/subcategories")
@@ -57,12 +60,12 @@ public class SubcategoryService {
         return ResponseEntity.ok(savedSubcategory);
     }
 
-    @DeleteMapping("/subcategories/{subcategoryId}")
+    @DeleteMapping("/subcategories/id/{subcategoryId}")
     public void deleteSubcategoryById(@PathVariable int subcategoryId) {
         subcategoryRepository.deleteById(subcategoryId);
     }
 
-    @DeleteMapping("/subcategories/{subcategoryName}")
+    @DeleteMapping("/subcategories/name/{subcategoryName}")
     public void deleteSubcategoryByName(@PathVariable String subcategoryName) {
         List<Subcategory> subcategories = subcategoryRepository.findAll();
         for (Subcategory subcategory : subcategories) {
@@ -72,7 +75,7 @@ public class SubcategoryService {
         }
     }
 
-    @PutMapping("/subcategories/{id}")
+    @PutMapping("/subcategories/id/{id}")
     public ResponseEntity updateSubcategory (@PathVariable int id, @RequestBody Subcategory subcategory) throws JsonProcessingException {
         Optional<Category> categoryFromDb = categoryRepository.findById(subcategory.getCategory().getId());
         if (categoryFromDb.isEmpty()) {

@@ -2,10 +2,12 @@ package pl.blazejherzog.mywallet.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.blazejherzog.mywallet.dto.CategoryDTO;
 import pl.blazejherzog.mywallet.model.Budget;
 import pl.blazejherzog.mywallet.model.Category;
 import pl.blazejherzog.mywallet.repositories.BudgetRepository;
@@ -27,27 +29,28 @@ public class CategoryService {
     @Autowired
     ObjectMapper objectMapper;
 
+    @Autowired
+    ModelMapper modelMapper;
+
     @GetMapping("/categories")
-    public ResponseEntity getCategories() throws JsonProcessingException {
-        List<Category> categories = categoryRepository.findAll();
-        return ResponseEntity.ok(objectMapper.writeValueAsString(categories));
+    public ResponseEntity getCategories() {
+        List<CategoryDTO> categories = categoryRepository.findAll()
+                .stream().map(category -> modelMapper.map(category, CategoryDTO.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(categories);
     }
 
-    @GetMapping("/budget/{budgetId}/categories")
+    @GetMapping("/categories/budgets/{budgetId}")
     public ResponseEntity getCategoriesByBudgetId(@PathVariable int budgetId) throws JsonProcessingException {
-        Optional<Budget> budgetFromDb = budgetRepository.findAll().stream()
-                .filter(budget -> budget.getBudgetId() == budgetId)
-                .findFirst();
-        if (budgetFromDb.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
         List<Category> categoriesByBudget = categoryRepository.findAll().stream()
                 .filter(category -> category.getBudget().getBudgetId() == budgetId)
                 .collect(Collectors.toList());
         if (categoriesByBudget.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.ok(objectMapper.writeValueAsString(categoriesByBudget));
+        List<CategoryDTO> categoryDTOList = categoriesByBudget.stream().map(category -> modelMapper.map(category, CategoryDTO.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(categoryDTOList);
     }
 
     @PostMapping("/categories")
@@ -82,7 +85,7 @@ public class CategoryService {
     }
 
 
-    @PutMapping("/categories/{id}")
+    @PutMapping("/categories/id/{id}")
     public ResponseEntity updateCategory (@PathVariable int id, @RequestBody Category category) throws JsonProcessingException {
         Optional<Budget> userFromDb = budgetRepository.findById(category.getBudget().getBudgetId());
         if (userFromDb.isEmpty()) {

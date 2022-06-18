@@ -2,11 +2,13 @@ package pl.blazejherzog.mywallet.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.blazejherzog.mywallet.dto.TransactionDTO;
 import pl.blazejherzog.mywallet.model.Budget;
 import pl.blazejherzog.mywallet.model.Subcategory;
 import pl.blazejherzog.mywallet.model.Transaction;
@@ -38,8 +40,11 @@ public class TransactionService {
     @Autowired
     ObjectMapper objectMapper;
 
-    @PostMapping("/budgets/{budgetId}/transactions")
-    public ResponseEntity addTransaction (@RequestBody Transaction transaction, @PathVariable int budgetId, Budget budget) {
+    @Autowired
+    ModelMapper modelMapper;
+
+    @PostMapping("/transactions/budgets/{budgetId}")
+    public ResponseEntity addTransaction (@RequestBody Transaction transaction, @PathVariable int budgetId) {
         Optional<Budget> budgetFromDb = budgetRepository.findAll().stream()
                 .filter(budget1 -> budget1.getBudgetId() == budgetId)
                 .findFirst();
@@ -56,17 +61,21 @@ public class TransactionService {
 
     @GetMapping("/transactions")
     public ResponseEntity getTransactions() throws JsonProcessingException {
-        List<Transaction> transactions = transactionRepository.findAll();
-        return ResponseEntity.ok(objectMapper.writeValueAsString(transactions));
+        List<TransactionDTO> transactions = transactionRepository.findAll()
+                .stream().map(transaction -> modelMapper.map(transaction, TransactionDTO.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(transactions);
     }
 
 
     @GetMapping("/transactions/id/{id}")
-    public ResponseEntity getTransactionById(@PathVariable int id) throws JsonProcessingException {
+    public ResponseEntity getTransactionById(@PathVariable int id) {
         Optional<Transaction> filteredTransaction = transactionRepository.findAll().stream()
                 .filter(transaction -> transaction.getId() == id)
                 .findFirst();
-        return ResponseEntity.ok(objectMapper.writeValueAsString(filteredTransaction));
+        Optional<TransactionDTO> transactionDTO = filteredTransaction.stream().map(transaction -> modelMapper.map(transaction, TransactionDTO.class))
+                .findFirst();
+        return ResponseEntity.ok(transactionDTO);
     }
 
 
@@ -75,11 +84,13 @@ public class TransactionService {
         List<Transaction> filteredTransactions = transactionRepository.findAll().stream()
                 .filter(transaction -> transaction.getName().equals(name))
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(objectMapper.writeValueAsString(filteredTransactions));
+        List<TransactionDTO> transactionDTOList = filteredTransactions.stream().map(transaction -> modelMapper.map(transaction, TransactionDTO.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(transactionDTOList);
     }
 
-    @GetMapping("/transactions/budget/{budgetId}")
-    public ResponseEntity getTransactionsByBudget(@PathVariable int budgetId) throws JsonProcessingException {
+    @GetMapping("/transactions/budgets/{budgetId}")
+    public ResponseEntity getTransactionsByBudget(@PathVariable int budgetId) {
         Optional<Budget> budgetFromDb = budgetRepository.findAll().stream()
                 .filter(budget -> budget.getBudgetId() == budgetId)
                 .findFirst();
@@ -89,10 +100,12 @@ public class TransactionService {
         List<Transaction> transactionsByBudget = transactionRepository.findAll().stream()
                 .filter(transaction -> transaction.getBudget().getBudgetId() == budgetId)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(objectMapper.writeValueAsString(transactionsByBudget));
+        List<TransactionDTO> transactionDTOList = transactionsByBudget.stream().map(transaction -> modelMapper.map(transaction, TransactionDTO.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(transactionDTOList);
     }
 
-    @GetMapping("/transactions/budget/{budgetId}/month/{transactionDate}")
+    @GetMapping("/transactions/budgets/{budgetId}/months/{transactionDate}")
     public ResponseEntity getTransactionsByBudgetAndMonth(@PathVariable int budgetId, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd")LocalDate transactionDate) throws JsonProcessingException {
         Optional<Budget> budgetFromDb = budgetRepository.findAll().stream()
                 .filter(budget -> budget.getBudgetId() == budgetId)
@@ -104,13 +117,16 @@ public class TransactionService {
                 .filter(transaction -> transaction.getBudget().getBudgetId() == budgetId)
                 .filter(transaction -> transaction.getDate().getMonth().equals(transactionDate.getMonth()))
                 .collect(Collectors.toList());
+        List<TransactionDTO> transactionDTOList = transactionsByBudgetAndMonth.stream().map(
+                        transaction -> modelMapper.map(transaction, TransactionDTO.class))
+                .collect(Collectors.toList());
         if (transactionsByBudgetAndMonth.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.ok(objectMapper.writeValueAsString(transactionsByBudgetAndMonth));
+        return ResponseEntity.ok(transactionDTOList);
     }
 
-    @DeleteMapping("/budgets/{budgetId}/transactions/{transactionId}")
+    @DeleteMapping("/transactions/id/{transactionId}/budgets/{budgetId}")
     public void deleteTransactionById(@PathVariable int budgetId, @PathVariable int transactionId) {
         Optional<Budget> budgetFromDb = budgetRepository.findAll().stream()
                 .filter(budget -> budget.getBudgetId() == budgetId)
@@ -132,12 +148,7 @@ public class TransactionService {
         }
     }
 
-    @DeleteMapping("/transactions/all")
-    public void deleteAllTransactions() {
-        transactionRepository.deleteAll();
-    }
-
-    @PutMapping("/budgets/{budgetId}/transactions/id/{transactionId}")
+    @PutMapping("/transactions/id/{transactionId}/budgets/{budgetId}")
     public ResponseEntity updateTransaction(@PathVariable int transactionId, @PathVariable int budgetId, @RequestBody Transaction transaction) throws JsonProcessingException {
         Optional<Budget> budgetFromDb = budgetRepository.findAll().stream()
                 .filter(budget1 -> budget1.getBudgetId() == budgetId)

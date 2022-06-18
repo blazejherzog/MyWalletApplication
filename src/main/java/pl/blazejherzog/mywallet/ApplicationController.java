@@ -43,7 +43,7 @@ public class ApplicationController {
     @Autowired
     ObjectMapper objectMapper;
 
-    @GetMapping("/month/{transactionsDate}/expenses")
+    @GetMapping("/controller/month/{transactionsDate}/expenses")
     public ResponseEntity getAllMonthlyExpenses(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate transactionsDate) {
         List<Transaction> allTransactionsByMonth = transactionRepository.findAll().stream()
                 .filter(transaction -> transaction.getDate().getMonth().equals(transactionsDate.getMonth()))
@@ -57,7 +57,7 @@ public class ApplicationController {
         return ResponseEntity.ok(totalAmount);
     }
 
-    @GetMapping("/category/{categoryName}/expenses")
+    @GetMapping("/controller/category/{categoryName}/expenses")
     public ResponseEntity getAllExpensesPerCategory(@PathVariable String categoryName) {
         List<Transaction> allExpensesPerCategory = transactionRepository.findAll().stream()
                 .filter(transaction -> transaction.getSubcategory().getCategory().getCategoryName().equals(categoryName))
@@ -71,7 +71,7 @@ public class ApplicationController {
     }
 
 
-    @GetMapping("/month/{transactionsDate}/categories/{categoryName}/expenses")
+    @GetMapping("/controller/month/{transactionsDate}/categories/{categoryName}/expenses")
     public ResponseEntity getMonthlyExpensesByCategory(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate transactionsDate, @PathVariable String categoryName) {
         List<Transaction> allTransactionsByMonthAndCategory = transactionRepository.findAll().stream()
                 .filter(transaction -> transaction.getDate().getMonth().equals(transactionsDate.getMonth()))
@@ -85,7 +85,7 @@ public class ApplicationController {
         return ResponseEntity.ok(totalAmount);
     }
 
-    @GetMapping("/month/{transactionsDate}/categories/{categoryName}/budgetedamounts/left")
+    @GetMapping("/controller/month/{transactionsDate}/categories/{categoryName}/budgetedamounts/left")
     public ResponseEntity getAmountStillToSpend(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate transactionsDate, @PathVariable String categoryName) {
         List<Transaction> allTransactionsByMonthAndCategory = transactionRepository.findAll().stream()
                 .filter(transaction -> transaction.getDate().getMonth().equals(transactionsDate.getMonth()))
@@ -105,7 +105,7 @@ public class ApplicationController {
         return ResponseEntity.ok(amountStillToSpend);
     }
 
-    @GetMapping("/user/budget/{budgetId}/left")
+    @GetMapping("/controller/user/budget/{budgetId}/left")
     public ResponseEntity getAmountStillInBudget (@PathVariable int budgetId) {
         Optional<Budget> budgetFromDb = budgetRepository.findAll().stream()
                 .filter(budget -> budget.getBudgetId() == budgetId)
