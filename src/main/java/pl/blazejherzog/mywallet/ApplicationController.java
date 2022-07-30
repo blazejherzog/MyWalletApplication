@@ -1,15 +1,11 @@
 package pl.blazejherzog.mywallet;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import pl.blazejherzog.mywallet.model.Budget;
 import pl.blazejherzog.mywallet.model.BudgetedAmount;
 import pl.blazejherzog.mywallet.model.Transaction;
 import pl.blazejherzog.mywallet.repositories.*;
@@ -26,22 +22,7 @@ public class ApplicationController {
     BudgetedAmountRepository budgetedAmountRepository;
 
     @Autowired
-    BudgetRepository budgetRepository;
-
-    @Autowired
-    CategoryRepository categoryRepository;
-
-    @Autowired
-    SubcategoryRepository subcategoryRepository;
-
-    @Autowired
     TransactionRepository transactionRepository;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    ObjectMapper objectMapper;
 
     @GetMapping("/controller/month/{transactionsDate}/expenses")
     public ResponseEntity getAllMonthlyExpenses(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate transactionsDate) {
@@ -104,25 +85,4 @@ public class ApplicationController {
         int amountStillToSpend = monthlyBudgetedAmountFromDb.get().getBudgetedAmount() - totalAmount;
         return ResponseEntity.ok(amountStillToSpend);
     }
-
-    @GetMapping("/controller/user/budget/{budgetId}/left")
-    public ResponseEntity getAmountStillInBudget (@PathVariable int budgetId) {
-        Optional<Budget> budgetFromDb = budgetRepository.findAll().stream()
-                .filter(budget -> budget.getBudgetId() == budgetId)
-                .findFirst();
-        if (budgetFromDb.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        List<Transaction> allTransactionsOfBudget = transactionRepository.findAll().stream()
-                .filter(transaction -> transaction.getBudget().getBudgetId() == budgetId)
-                .collect(Collectors.toList());
-        int totalAmount = 0;
-        for (Transaction transaction : allTransactionsOfBudget) {
-            int amount = transaction.getAmount();
-            totalAmount += amount;
-        }
-        int stillInBudget = budgetFromDb.get().getAmount() - totalAmount;
-        return ResponseEntity.ok(stillInBudget);
-    }
-
 }

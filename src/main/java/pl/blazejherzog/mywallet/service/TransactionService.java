@@ -26,12 +26,6 @@ public class TransactionService {
     TransactionRepository transactionRepository;
 
     @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    CategoryRepository categoryRepository;
-
-    @Autowired
     SubcategoryRepository subcategoryRepository;
 
     @Autowired

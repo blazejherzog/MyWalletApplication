@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.Banner;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +14,6 @@ import pl.blazejherzog.mywallet.model.Category;
 import pl.blazejherzog.mywallet.repositories.BudgetedAmountRepository;
 import pl.blazejherzog.mywallet.repositories.CategoryRepository;
 
-import java.text.DateFormat;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -90,17 +88,18 @@ public class BudgetedAmountService {
         return ResponseEntity.ok(objectMapper.writeValueAsString(savedBudgetedAmount));
     }
 
-    @PutMapping("/budgetedamounts/months/{budgetedDate}/categories/{categoryName}")
-    public ResponseEntity updateBudgetedAmount(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate budgetedDate, @PathVariable String categoryName, @RequestBody BudgetedAmount budgetedAmount) throws JsonProcessingException {
+    @PutMapping("/budgetedamounts/months/{budgetedDate}/id/{id}")
+    public ResponseEntity updateBudgetedAmount(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate budgetedDate, @PathVariable int id, @RequestBody BudgetedAmount budgetedAmount) throws JsonProcessingException {
         Optional<BudgetedAmount> amountPerCategoryAndMonth = budgetedAmountRepository.findAll().stream()
                 .filter(budgetedAmount1 -> budgetedAmount1.getBudgetedDate().getMonth().equals(budgetedDate.getMonth()))
-                .filter(budgetedAmount1 -> budgetedAmount1.getCategory().getCategoryName().equals(categoryName))
+                .filter(budgetedAmount1 -> budgetedAmount1.getId()==(id))
                 .findFirst();
         if (amountPerCategoryAndMonth.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         budgetedAmount.setBudgetedDate(amountPerCategoryAndMonth.get().getBudgetedDate());
         budgetedAmount.setBudgetedAmount(amountPerCategoryAndMonth.get().getBudgetedAmount());
+        budgetedAmount.setId(amountPerCategoryAndMonth.get().getId());
         budgetedAmount.setCategory(amountPerCategoryAndMonth.get().getCategory());
         BudgetedAmount savedBudgetedAmount = budgetedAmountRepository.save(budgetedAmount);
         return ResponseEntity.ok(objectMapper.writeValueAsString(savedBudgetedAmount));
